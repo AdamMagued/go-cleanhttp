@@ -36,9 +36,18 @@ func DefaultPooledTransport() *http.Transport {
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
 		ForceAttemptHTTP2:     true,
-		MaxIdleConnsPerHost:   runtime.GOMAXPROCS(0) + 1,
+		MaxIdleConnsPerHost:   defaultMaxIdleConnsPerHost(),
 	}
 	return transport
+}
+
+func defaultMaxIdleConnsPerHost() int {
+	return calcMaxIdleConnsPerHost(runtime.GOMAXPROCS(0))
+}
+
+func calcMaxIdleConnsPerHost(procs int) int {
+	const minIdleConns = 4
+	return max(minIdleConns, procs+1)
 }
 
 // DefaultClient returns a new http.Client with similar default values to
